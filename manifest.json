@@ -1,0 +1,43 @@
+{
+  "name": "Thai Amulet Gold",
+  "short_name": "Thai Amulet Gold",
+  "description": "ติดตามพอร์ตพระเครื่อง ทองคำ และโลหะมีค่า / Track Thai Amulets, Gold & Precious Metals",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0A1628",
+  "background_color": "#0A1628",
+  "lang": "th",
+  "dir": "ltr",
+  "categories": ["finance", "lifestyle"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230A1628'/%3E%3Crect x='8' y='8' width='176' height='176' rx='28' fill='none' stroke='%23C9A84C' stroke-width='2'/%3E%3Ctext x='96' y='130' font-size='88' text-anchor='middle' font-family='Arial'%3E%F0%9F%8F%AF%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230A1628'/%3E%3Crect x='16' y='16' width='480' height='480' rx='70' fill='none' stroke='%23C9A84C' stroke-width='4'/%3E%3Ctext x='256' y='340' font-size='220' text-anchor='middle' font-family='Arial'%3E%F0%9F%8F%AF%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "เพิ่มรายการ",
+      "short_name": "Add",
+      "description": "เพิ่มสินทรัพย์ใหม่",
+      "url": "/?page=add",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Ctext y='80' font-size='80'%3E%E2%9E%95%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "ราคาทองคำ",
+      "short_name": "ราคา",
+      "description": "ดูราคาทองคำวันนี้",
+      "url": "/?page=price"
+    }
+  ]
+}
