@@ -1309,10 +1309,10 @@ async function fetchPrices() {
   try {
     // ดึงราคาทอง เงิน แพลตินัม และ USD/THB พร้อมกัน
     const [xauRes, xagRes, xptRes, thbRes] = await Promise.all([
-      fetch('https://www.gold-api.com/price/XAU', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://www.gold-api.com/price/XAG', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://www.gold-api.com/price/XPT', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://www.gold-api.com/price/THB', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://api.gold-api.com/v1/prices/XAU', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://api.gold-api.com/v1/prices/XAG', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://api.gold-api.com/v1/prices/XPT', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://open.er-api.com/v6/latest/USD', { headers, signal: AbortSignal.timeout(8000) }),
     ]);
 
     const xauData = await xauRes.json();
@@ -1324,7 +1324,7 @@ async function fetchPrices() {
     const xagUsd = xagData.price || 29.5;
     const xptUsd = xptData.price || 975;
     // THB endpoint ให้ราคาทองเป็น THB โดยตรง หรือใช้ USD/THB rate
-    const usdThb = thbData.price ? (xauUsd / thbData.price * 31.1035) : USD_THB_APPROX;
+    const usdThb = thbData.rates?.THB || USD_THB_APPROX;
 
     prices = buildPrices(xauUsd, xagUsd, usdThb, xptUsd, 900);
     savePricesLocal(prices);
