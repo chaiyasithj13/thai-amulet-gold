@@ -1303,20 +1303,35 @@ async function fetchPrices() {
   const cached = loadPricesLocal();
   if (cached) { prices = cached; updatePriceUI(); return; }
 
-  // Use demo/estimated prices as fallback (free API often blocked cross-origin)
-  // In production: integrate metals-api.com or goldapi.io key
+  const GOLD_API_KEY = '266e41f389e950eaa310e8e4edbbcb52929c7b8f3aabe80d54db6a78aa5502dc';
+  const headers = { 'x-access-token': GOLD_API_KEY, 'Content-Type': 'application/json' };
+
   try {
-    const res = await fetch('https://data-asg.goldprice.org/dbXRates/USD', { signal: AbortSignal.timeout(5000) });
-    const data = await res.json();
-    if (data?.items?.[0]) {
-      const xauUsd = data.items[0].xauPrice || 2320;
-      const xagUsd = data.items[0].xagPrice || 29;
-      const usdThb = USD_THB_APPROX;
-      prices = buildPrices(xauUsd, xagUsd, usdThb, 975, 900);
-      savePricesLocal(prices);
-    }
+    // ดึงราคาทอง เงิน แพลตินัม และ USD/THB พร้อมกัน
+    const [xauRes, xagRes, xptRes, thbRes] = await Promise.all([
+      fetch('https://www.gold-api.com/price/XAU', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://www.gold-api.com/price/XAG', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://www.gold-api.com/price/XPT', { headers, signal: AbortSignal.timeout(8000) }),
+      fetch('https://www.gold-api.com/price/THB', { headers, signal: AbortSignal.timeout(8000) }),
+    ]);
+
+    const xauData = await xauRes.json();
+    const xagData = await xagRes.json();
+    const xptData = await xptRes.json();
+    const thbData = await thbRes.json();
+
+    const xauUsd = xauData.price || 2320;
+    const xagUsd = xagData.price || 29.5;
+    const xptUsd = xptData.price || 975;
+    // THB endpoint ให้ราคาทองเป็น THB โดยตรง หรือใช้ USD/THB rate
+    const usdThb = thbData.price ? (xauUsd / thbData.price * 31.1035) : USD_THB_APPROX;
+
+    prices = buildPrices(xauUsd, xagUsd, usdThb, xptUsd, 900);
+    savePricesLocal(prices);
+    showToast(currentLang==='th' ? 'อัพเดตราคาแล้ว ✓' : 'Prices updated ✓', 'success');
   } catch(e) {
-    // Demo prices
+    console.warn('Gold API failed, using fallback:', e.message);
+    // Fallback demo prices
     prices = buildPrices(2320, 29.5, 35.5, 975, 935);
   }
   updatePriceUI();
