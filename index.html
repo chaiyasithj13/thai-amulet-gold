@@ -1303,36 +1303,36 @@ async function fetchPrices() {
   const cached = loadPricesLocal();
   if (cached) { prices = cached; updatePriceUI(); return; }
 
-  const GOLD_API_KEY = '266e41f389e950eaa310e8e4edbbcb52929c7b8f3aabe80d54db6a78aa5502dc';
-  const headers = { 'x-access-token': GOLD_API_KEY, 'Content-Type': 'application/json' };
-
   try {
-    // ดึงราคาทอง เงิน แพลตินัม และ USD/THB พร้อมกัน
-    const [xauRes, xagRes, xptRes, thbRes] = await Promise.all([
-      fetch('https://api.gold-api.com/v1/prices/XAU', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://api.gold-api.com/v1/prices/XAG', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://api.gold-api.com/v1/prices/XPT', { headers, signal: AbortSignal.timeout(8000) }),
-      fetch('https://open.er-api.com/v6/latest/USD', { headers, signal: AbortSignal.timeout(8000) }),
-    ]);
-
-    const xauData = await xauRes.json();
-    const xagData = await xagRes.json();
-    const xptData = await xptRes.json();
+    // ดึง USD/THB ฟรี ไม่ต้อง key
+    const thbRes = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(6000) });
     const thbData = await thbRes.json();
-
-    const xauUsd = xauData.price || 2320;
-    const xagUsd = xagData.price || 29.5;
-    const xptUsd = xptData.price || 975;
-    // THB endpoint ให้ราคาทองเป็น THB โดยตรง หรือใช้ USD/THB rate
     const usdThb = thbData.rates?.THB || USD_THB_APPROX;
 
-    prices = buildPrices(xauUsd, xagUsd, usdThb, xptUsd, 900);
-    savePricesLocal(prices);
-    showToast(currentLang==='th' ? 'อัพเดตราคาแล้ว ✓' : 'Prices updated ✓', 'success');
+    // ดึงราคาทอง เงิน แพลตินัม จาก goldpricez.com (รองรับ CORS, ฟรี)
+    const metalRes = await fetch('https://data-asg.goldprice.org/dbXRates/USD', { signal: AbortSignal.timeout(6000) });
+    const metalData = await metalRes.json();
+
+    if (metalData?.items?.[0]) {
+      const xauUsd = metalData.items[0].xauPrice || 2320;
+      const xagUsd = metalData.items[0].xagPrice || 29.5;
+      prices = buildPrices(xauUsd, xagUsd, usdThb, 975, 900);
+      savePricesLocal(prices);
+      showToast(currentLang==='th' ? '✓ อัพเดตราคาแล้ว' : '✓ Prices updated', 'success');
+    } else {
+      throw new Error('No data');
+    }
   } catch(e) {
-    console.warn('Gold API failed, using fallback:', e.message);
-    // Fallback demo prices
-    prices = buildPrices(2320, 29.5, 35.5, 975, 935);
+    console.warn('Price API failed:', e.message);
+    // ลองดึง USD/THB อย่างเดียวก่อน แล้วใช้ราคา XAU fallback
+    try {
+      const thbRes = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(5000) });
+      const thbData = await thbRes.json();
+      const usdThb = thbData.rates?.THB || USD_THB_APPROX;
+      prices = buildPrices(2320, 29.5, usdThb, 975, 935);
+    } catch(e2) {
+      prices = buildPrices(2320, 29.5, USD_THB_APPROX, 975, 935);
+    }
   }
   updatePriceUI();
 }
